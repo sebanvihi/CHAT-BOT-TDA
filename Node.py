@@ -10,8 +10,8 @@ class Node:
         self.systemInstruction = systemInstruction;
         self.next = None;
         self.previous = None;
-        self.undoStack = None
-        self.messageQueue = None 
+        self.undoStack = None;
+        self.messageQueue = None; 
 
     def generateID(self):
         newId = "";
