@@ -1,15 +1,17 @@
 from random import choice;
 import string;
 
-class Nodo:
+class Node:
     def __init__(self,botName,model,apiKey,systemInstruction):
-        self.id = self.generateID(self);
+        self.id = self.generateID();
         self.botName = botName;
         self.model = model;
         self.apiKey = apiKey;
         self.systemInstruction = systemInstruction;
         self.next = None;
         self.previous = None;
+        self.undoStack = None
+        self.messageQueue = None 
 
     def generateID(self):
         newId = "";
@@ -21,6 +23,8 @@ class Nodo:
         newId += "-";
         for i in range (4):
             newId += choice(string.digits);
+        return newId;
+        
 
 
 
