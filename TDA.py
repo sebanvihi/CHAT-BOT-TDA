@@ -23,7 +23,7 @@ class Cola:
     def enqueue(self, user, text):
         message = Message(user, text)
         if self.full():
-            logger.logError(202, f"Desbordamiento de cola: Se eliminó mensaje antiguo para liberar espacio.")
+            logger.logError(202, f"Se eliminó mensaje antiguo.")
             self.first = self.first.next
             self.n -= 1
         if self.void():
