@@ -1,3 +1,6 @@
+from ErrorLogManager import ErrorLogManager
+logger = ErrorLogManager()
+
 class Message:
     def __init__(self, user, text):
         self.user = user  
@@ -29,3 +32,4 @@ class Cola:
             self.last.next = message
             self.last = message
             self.n += 1
+
