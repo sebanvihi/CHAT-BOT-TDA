@@ -56,20 +56,14 @@ class AppCLI:
 
         try:
             co = cohere.Client(self.selected_node.apiKey)
-            
             prompt_final = f"{self.selected_node.systemInstruction}\n\nUser: {msg_user}\nChatbot:"
-            
-            response = co.generate(
+            response = co.chat(
                 model=self.selected_node.model,
-                prompt=prompt_final,
-                max_tokens=200
+                message=prompt_final
             )
-            
-            respuesta_ai = response.generations[0].text.strip()
-            
+            respuesta_ai = response.text.strip()
             self.selected_node.messageQueue.enqueue("User", msg_user)
             self.selected_node.messageQueue.enqueue(self.selected_node.botName, respuesta_ai)
-            
             print(f"\n[{self.selected_node.botName}]: {respuesta_ai}")
             
         except Exception as e:
@@ -90,8 +84,8 @@ class AppCLI:
 
     def cmd_create(self, args):
         b = input("Nombre: ")
-        m = input("Modelo (ej: command-light): ")
-        k = input("ApiKey (deja vacio para usar la de defecto): ") or "cohere_WZijS67EZ4Pr60Tm7fGvneRgCUK3BxF963rs8L553ttEKd"
+        m = input("Modelo (ej: command-light): ") or "command-a-03-2025"
+        k = input("ApiKey (deja vacio para usar la de defecto): ") or "xVsKUv72B05xviCPtkQtEKwZaWOfT4oms8q67BH3"
         si = input("System Instruction: ")
         pid = self.profile_manager.createProfile(b, m, k, si)
         print(f"ID generado: {pid}")
