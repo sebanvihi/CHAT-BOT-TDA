@@ -29,11 +29,14 @@ class AppCLI:
         while True:
             bot_actual = self.selected_node.botName if self.selected_node else "Ninguno"
             entrada = input(f"\n[Bot: {bot_actual}]> ").strip()
+            
             if not entrada: continue
             if entrada.lower() in ["exit", "exit-chatbot"]: break
+
             partes = entrada.split(maxsplit=1)
             comando = partes[0].lower()
             argumentos = partes[1] if len(partes) > 1 else ""
+
             if comando in self.comandos:
                 try:
                     self.comandos[comando](argumentos)
@@ -47,20 +50,28 @@ class AppCLI:
         if not self.selected_node:
             print("Selecciona un bot primero.")
             return
+        
         msg_user = args.strip('"').strip("'")
         if not msg_user: return
+
         try:
             co = cohere.Client(self.selected_node.apiKey)
+            
             prompt_final = f"{self.selected_node.systemInstruction}\n\nUser: {msg_user}\nChatbot:"
+            
             response = co.generate(
                 model=self.selected_node.model,
                 prompt=prompt_final,
                 max_tokens=200
             )
+            
             respuesta_ai = response.generations[0].text.strip()
+            
             self.selected_node.messageQueue.enqueue("User", msg_user)
             self.selected_node.messageQueue.enqueue(self.selected_node.botName, respuesta_ai)
+            
             print(f"\n[{self.selected_node.botName}]: {respuesta_ai}")
+            
         except Exception as e:
             error_msg = f"Fallo en API Cohere: {str(e)}"
             print(error_msg)
@@ -106,19 +117,19 @@ class AppCLI:
 
     def cmd_current(self, args):
         if not self.selected_node: return
-        current = self.selected_node.messageQueue.first
-        while current:
-            print(f"[{current.user}]: {current.text}")
-            current = current.next
+        actual = self.selected_node.messageQueue.first
+        while actual:
+            print(f"[{actual.user}]: {actual.text}")
+            actual = actual.next
 
     def cmd_edit(self, args):
         if not self.selected_node: return
         partes = args.split(maxsplit=1)
         if len(partes) < 2: return
-        campo, value = partes[0].lower(), partes[1]
-        if campo == "nombre": self.profile_manager.modifyProfile(self.selected_node.id, newName=value)
-        elif campo == "modelo": self.profile_manager.modifyProfile(self.selected_node.id, newModel=value)
-        elif campo == "prompt": self.profile_manager.modifyProfile(self.selected_node.id, newPrompt=value)
+        campo, valor = partes[0].lower(), partes[1]
+        if campo == "nombre": self.profile_manager.modifyProfile(self.selected_node.id, newName=valor)
+        elif campo == "modelo": self.profile_manager.modifyProfile(self.selected_node.id, newModel=valor)
+        elif campo == "prompt": self.profile_manager.modifyProfile(self.selected_node.id, newPrompt=valor)
         print("Editado.")
 
     def cmd_delete(self, args):
