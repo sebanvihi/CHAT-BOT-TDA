@@ -9,9 +9,11 @@ def cargar_datos(manager):
         with open(ruta_json, "r") as f:
             datos = json.load(f)
             for bot in datos["chatbots"]:
-                nuevo_bot_id = manager.createProfile(
-                    bot["botName"], bot["model"], bot["apiKey"], bot["systemInstruction"]
-                )
-        # Aquí podrías restaurar también los mensajes y el historial si lo necesitas.
+                manager.createProfile(bot["botName"], bot["model"], bot["apiKey"], bot["systemInstruction"])
+                nuevo_nodo = manager.end
+                for msg in bot.get("mensajes", []):
+                    nuevo_nodo.messageQueue.enqueue(msg["user"], msg["text"])
+                for estado in reversed(bot.get("historial_estados", [])):
+                    nuevo_nodo.undoStack.push(estado["model"], estado["systemInstruction"])
     except Exception as e:
         logger.logError(500, f"Fallo en persistencia: {str(e)}")

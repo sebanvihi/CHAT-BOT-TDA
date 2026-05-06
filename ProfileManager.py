@@ -1,40 +1,42 @@
-from Node import Node;
+from Node import Node
+from ErrorLogManager import ErrorLogManager
+
 class ProfileManager:
     def __init__(self):
-        self.head = None;
-        self.end = None;
+        self.head = None
+        self.end = None
+        self.logger = ErrorLogManager()
 
-    def createProfile(self,botName,model,apiKey,systemInstruction):
-        newNode = Node(botName,model,apiKey,systemInstruction)
+    def createProfile(self, botName, model, apiKey, systemInstruction):
+        newNode = Node(botName, model, apiKey, systemInstruction)
         if not self.head:
-            self.head = self.end = newNode;
+            self.head = self.end = newNode
         else:
-            self.end.next = newNode;
-            newNode.previous = self.end;
-            self.end = newNode;
-        return newNode.id;
+            self.end.next = newNode
+            newNode.previous = self.end
+            self.end = newNode
+        return newNode.id
     
-    def consultProfile(self,requiredId):
-        current = self.head;
+    def consultProfile(self, requiredId):
+        current = self.head
         while current:
             if current.id == requiredId:
-                return current;
-            current = current.next;
+                return current
+            current = current.next
+        self.logger.logError("ERR_NOT_FOUND", f"ID {requiredId} no existe.")
         return None
     
-    def modifyProfile(self,requiredId,newName = None, newModel = None,newPrompt = None):
-        node = self.consultProfile(requiredId);
+    def modifyProfile(self, requiredId, newName=None, newModel=None, newPrompt=None):
+        node = self.consultProfile(requiredId)
         if node:
-            if newName != None:
-                node.botName = newName;
-            if newModel != None:
-                node.model = newModel;
-            if newPrompt != None:
-                node.systemInstruction = newPrompt;
-            return True;
-        return False;
+            node.undoStack.push(node.model, node.systemInstruction)  
+            if newName != None: node.botName = newName
+            if newModel != None: node.model = newModel
+            if newPrompt != None: node.systemInstruction = newPrompt
+            return True
+        return False
 
-    def deleteProfile(self,requiredId):
+    def deleteProfile(self, requiredId):
         node = self.consultProfile(requiredId)
         if not node:
             return False
@@ -51,7 +53,7 @@ class ProfileManager:
         return True
     
     def __iter__(self):
-        current = self.head;
+        current = self.head
         while current:
-            yield current;
-            current = current.next;
+            yield current
+            current = current.next

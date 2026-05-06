@@ -18,6 +18,6 @@ class ErrorLogManager:
             print("NO SE ENCUENTRA ERRORES")
             return
         while current:
-            print(f"FECHA Y HORA: {current.dateError:<30s} CODIGO: {current.errorCode:.10d} DESCRIPCION: {current.shortDescription}")
+            print(f"FECHA Y HORA: {current.dateError:<30s} CODIGO: {current.errorCode:.10s} DESCRIPCION: {current.shortDescription}")
             current = current.next;
-            return;
+        return;

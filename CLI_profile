@@ -1,118 +1,185 @@
 from ProfileManager import ProfileManager
-from ErrorLogManager import ErrorLogManager
 from serialization import serializar, obtener_ruta
 from deserialization import cargar_datos
-from TDA import Cola
-from StackManager import StackManager
 
-def imprimir_perfil(node):
-    print(f"ID: {node.id}\n  Nombre: {node.botName}\n  Modelo: {node.model}\n  ApiKey: {node.apiKey}\n  Prompt: {node.systemInstruction}")
+class AppCLI:
+    def __init__(self):
+        self.profile_manager = ProfileManager()
+        self.selected_node = None
+        
+        self.comandos = {
+            "create": self.cmd_create,
+            "list": self.cmd_list,
+            "select": self.cmd_select,
+            "chat": self.cmd_chat,
+            "edit": self.cmd_edit,
+            "delete": self.cmd_delete,
+            "undo": self.cmd_undo,
+            "current": self.cmd_current,
+            "log": self.cmd_log,
+            "save": self.cmd_save,
+            "load": self.cmd_load,
+            "help": self.cmd_help
+        }
 
-def main():
-    profile_manager = ProfileManager()
-    error_manager = ErrorLogManager()
-    cola = None
-    pila = None
+    def run(self):
+        print("------ INICIANDO GEMINI MESH ------")
+        print("Escribe 'help' para ver los comandos.")
+        
+        while True:
+            bot_actual = self.selected_node.botName if self.selected_node else "Ninguno"
+            entrada = input(f"\n[Bot: {bot_actual}]> ").strip()
+            
+            if not entrada:
+                continue
 
-    while True:
-        print("\n------ MENÚ PRINCIPAL ------")
-        print("1. Crear perfil")
-        print("2. Consultar perfil")
-        print("3. Modificar perfil")
-        print("4. Eliminar perfil")
-        print("5. Listar perfiles")
-        print("6. Enviar mensaje a cola")
-        print("7. Apilar estado (guardar modelo/prompt)")
-        print("8. Desapilar estado")
-        print("9. Guardar en JSON")
-        print("10. Cargar desde JSON")
-        print("11. Ver errores")
-        print("0. Salir")
-        opcion = input("Escoge opción: ").strip()
+            if entrada.lower() == "exit" or entrada.lower() == "exit-chatbot":
+                break
 
-        if opcion == "1":
-            b = input("Nombre del bot: ")
-            m = input("Modelo: ")
-            k = input("ApiKey: ")
-            si = input("Prompt/System Instruction: ")
-            pid = profile_manager.createProfile(b, m, k, si)
-            print(f"Perfil creado con ID: {pid}")
+            partes = entrada.split(maxsplit=1)
+            comando = partes[0].lower()
+            argumentos = partes[1] if len(partes) > 1 else ""
 
-        elif opcion == "2":
-            pid = input("ID a consultar: ")
-            node = profile_manager.consultProfile(pid)
-            if node:
-                imprimir_perfil(node)
+            if comando in self.comandos:
+                try:
+                    self.comandos[comando](argumentos)
+                except Exception as e:
+                    print(f"Error ejecutando '{comando}': {e}")
+                    self.profile_manager.logger.logError(500, f"Error en CLI {comando}: {str(e)}")
             else:
-                print("Perfil no encontrado.")
+                print("Comando no reconocido.")
 
-        elif opcion == "3":
-            pid = input("ID a modificar: ")
-            node = profile_manager.consultProfile(pid)
-            if node:
-                new_name = input(f"Nuevo nombre (deja vacío para '{node.botName}'): ") or None
-                new_model = input(f"Nuevo modelo (deja vacío para '{node.model}'): ") or None
-                new_prompt = input(f"Nuevo prompt (deja vacío para '{node.systemInstruction}'): ") or None
-                ok = profile_manager.modifyProfile(pid, new_name, new_model, new_prompt)
-                print("Perfil modificado." if ok else "No se pudo modificar.")
-            else:
-                print("Perfil no encontrado.")
+    def cmd_help(self, args):
+        print(" create              : Crea un nuevo perfil")
+        print(" list                : Muestra todos los bots")
+        print(" select <id>         : Selecciona un bot")
+        print(" chat \"<msj>\"        : Envia un mensaje")
+        print(" edit <campo> <valor>: Modifica nombre, modelo o prompt")
+        print(" delete <id>         : Elimina un bot")
+        print(" undo                : Restaura la configuracion")
+        print(" current             : Muestra el contexto")
+        print(" save                : Guarda en JSON")
+        print(" load                : Carga desde JSON")
+        print(" log                 : Muestra los errores")
+        print(" exit / exit-chatbot : Cierra el programa")
 
-        elif opcion == "4":
-            pid = input("ID a eliminar: ")
-            ok = profile_manager.deleteProfile(pid)
-            print("Eliminado." if ok else "No se encontró ese perfil.")
+    def cmd_create(self, args):
+        b = input("Nombre del bot: ")
+        m = input("Modelo: ")
+        k = input("ApiKey: ")
+        si = input("Prompt: ")
+        pid = self.profile_manager.createProfile(b, m, k, si)
+        print(f"Perfil creado con ID: {pid}")
 
-        elif opcion == "5":
-            for node in profile_manager:
-                imprimir_perfil(node)
+    def cmd_list(self, args):
+        hay_bots = False
+        for node in self.profile_manager:
+            hay_bots = True
+            print(f"ID: {node.id} Nombre: {node.botName} Modelo: {node.model}")
+        if not hay_bots:
+            print("No hay bots registrados.")
 
-        elif opcion == "6":
-            # Este ejemplo asume que hay solo una cola global. Puedes relacionarla con un node específico si quieres.
-            if cola is None:
-                max_size = int(input("Tamaño máximo de cola: "))
-                cola = Cola(max_size)
-            user = input("Usuario remitente: ")
-            text = input("Mensaje: ")
-            cola.enqueue(user, text)
-            print("Mensaje encolado.")
-
-        elif opcion == "7":
-            # Este ejemplo asume que hay una pila por sistema, puedes asociarla a node si lo prefieres
-            if pila is None:
-                pila = StackManager()
-            model = input("Modelo a guardar: ")
-            prompt = input("Prompt a guardar: ")
-            pila.push(model, prompt)
-            print("Estado guardado en pila.")
-
-        elif opcion == "8":
-            if pila is not None:
-                popped = pila.pop()
-                if popped:
-                    print(f"Desapilado: Modelo='{popped.model}', Prompt='{popped.systemInstruction}'")
-                else:
-                    print("La pila está vacía.")
-            else:
-                print("La pila aún no ha sido creada.")
-
-        elif opcion == "9":
-            ruta = obtener_ruta()
-            serializar(profile_manager, ruta)
-
-        elif opcion == "10":
-            cargar_datos(profile_manager)
-            print("Datos cargados.")
-
-        elif opcion == "11":
-            error_manager.showErrors()
-
-        elif opcion == "0":
-            print("Saliendo...")
-            break
-
+    def cmd_select(self, args):
+        if not args:
+            print("Debes indicar un ID.")
+            return
+        
+        node = self.profile_manager.consultProfile(args)
+        if node:
+            self.selected_node = node
+            print(f"Bot '{node.botName}' seleccionado.")
         else:
-            print("Opción no válida. Intenta de nuevo.")
+            print("Bot no encontrado.")
+
+    def cmd_chat(self, args):
+        if not self.selected_node:
+            print("Debes seleccionar un bot primero.")
+            return
+        if not args:
+            print("Falta el mensaje.")
+            return
+        
+        mensaje = args.strip('"').strip("'")
+        usuario = "User"
+        self.selected_node.messageQueue.enqueue(usuario, mensaje)
+        print("Mensaje encolado.")
+
+    def cmd_edit(self, args):
+        if not self.selected_node:
+            print("Debes seleccionar un bot primero.")
+            return
+        
+        partes = args.split(maxsplit=1)
+        if len(partes) < 2:
+            print("Formato incorrecto.")
+            return
+            
+        campo = partes[0].lower()
+        valor = partes[1].strip('"').strip("'")
+        
+        if campo == "nombre":
+            self.profile_manager.modifyProfile(self.selected_node.id, newName=valor)
+        elif campo == "modelo":
+            self.profile_manager.modifyProfile(self.selected_node.id, newModel=valor)
+        elif campo == "prompt":
+            self.profile_manager.modifyProfile(self.selected_node.id, newPrompt=valor)
+        else:
+            print("Campo no valido.")
+            return
+            
+        print("Campo actualizado.")
+
+    def cmd_delete(self, args):
+        if not args:
+            print("Debes indicar un ID.")
+            return
+            
+        if self.profile_manager.deleteProfile(args):
+            print(f"Bot {args} eliminado.")
+            if self.selected_node and self.selected_node.id == args:
+                self.selected_node = None
+        else:
+            print("No se encontro ese perfil.")
+
+    def cmd_undo(self, args):
+        if not self.selected_node:
+            print("Debes seleccionar un bot primero.")
+            return
+            
+        popped = self.selected_node.undoStack.pop()
+        if popped:
+            self.selected_node.model = popped.model
+            self.selected_node.systemInstruction = popped.systemInstruction
+            print("Configuracion restaurada.")
+        else:
+            print("La pila esta vacia.")
+
+    def cmd_current(self, args):
+        if not self.selected_node:
+            print("Debes seleccionar un bot primero.")
+            return
+            
+        print(f"Modelo: {self.selected_node.model}")
+        print(f"Instruccion: {self.selected_node.systemInstruction}")
+        print("Mensajes:")
+        
+        actual_msg = self.selected_node.messageQueue.first
+        if not actual_msg:
+            print("No hay mensajes.")
+        while actual_msg:
+            print(f"[{actual_msg.user}]: {actual_msg.text}")
+            actual_msg = actual_msg.next
+
+    def cmd_log(self, args):
+        self.profile_manager.logger.showErrors()
+
+    def cmd_save(self, args):
+        serializar(self.profile_manager, obtener_ruta())
+
+    def cmd_load(self, args):
+        cargar_datos(self.profile_manager)
+        print("Datos cargados.")
 
 if __name__ == "__main__":
-    main()
+    app = AppCLI()
+    app.run()
