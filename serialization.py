@@ -1,4 +1,6 @@
 import json
+from ErrorLogManager import ErrorLogManager
+logger = ErrorLogManager()
 
 def serializar(manager, ruta_archivo):
     data_final = {"chatbots": []}
