@@ -20,36 +20,29 @@ class ProfileManager:
     def consultProfile(self, requiredId):
         current = self.head
         while current:
-            if current.id == requiredId:
-                return current
+            if current.id == requiredId: return current
             current = current.next
-        self.logger.logError("ERR_NOT_FOUND", f"ID {requiredId} no existe.")
+        self.logger.logError("NOT_FOUND", requiredId)
         return None
     
     def modifyProfile(self, requiredId, newName=None, newModel=None, newPrompt=None):
         node = self.consultProfile(requiredId)
         if node:
-            node.undoStack.push(node.model, node.systemInstruction)  
-            if newName != None: node.botName = newName
-            if newModel != None: node.model = newModel
-            if newPrompt != None: node.systemInstruction = newPrompt
+            node.undoStack.push(node.model, node.systemInstruction)
+            if newName: node.botName = newName
+            if newModel: node.model = newModel
+            if newPrompt: node.systemInstruction = newPrompt
             return True
         return False
 
     def deleteProfile(self, requiredId):
         node = self.consultProfile(requiredId)
-        if not node:
-            return False
-        if node == self.head:
-            self.head = node.next
-        if node.previous:
-            node.previous.next = node.next
-        if node.next:
-            node.next.previous = node.previous
-        else:
-            self.end = node.previous
-        node.next = None
-        node.previous = None
+        if not node: return False
+        if node == self.head: self.head = node.next
+        if node.previous: node.previous.next = node.next
+        if node.next: node.next.previous = node.previous
+        else: self.end = node.previous
+        node.next = node.previous = None
         return True
     
     def __iter__(self):
