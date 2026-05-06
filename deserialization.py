@@ -1,23 +1,17 @@
 import json
-from Node import Node # Importa el nodo del Módulo 1
-from ProfileManager import ProfileManager
-from StackManager import StackManager 
-from ErrorLogManager import ErrorLogManager 
-from serializacion import obtener_ruta
+from ErrorLogManager import ErrorLogManager
 
 def cargar_datos(manager):
+    logger = ErrorLogManager()
     try:
         with open("config.txt", "r") as config:
             ruta_json = config.read().strip()
-            
         with open(ruta_json, "r") as f:
             datos = json.load(f)
-            
             for bot in datos["chatbots"]:
-                nuevo_bot = Node(bot["botName"], bot["model"], bot["apiKey"], bot["systemInstruction"])
-
-                manager.insertar_final(nuevo_bot)
-                
+                nuevo_bot_id = manager.createProfile(
+                    bot["botName"], bot["model"], bot["apiKey"], bot["systemInstruction"]
+                )
+        # Aquí podrías restaurar también los mensajes y el historial si lo necesitas.
     except Exception as e:
-        error_logger = ErrorLogManager()
-        error_logger.logError(500, f"Fallo en persistencia: {str(e)}")
+        logger.logError(500, f"Fallo en persistencia: {str(e)}")
