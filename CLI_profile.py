@@ -31,7 +31,7 @@ class AppCLI:
     def run(self):
         self.cmd_load("")
         if not self.profile_manager.head:
-            self.profile_manager.createProfile("DefaultBot", "command-light", "xVsKUv72B05xviCPtkQtEKwZaWOfT4oms8q67BH3", "You are a helpful assistant.", "root")
+            self.profile_manager.createProfile("DefaultBot", "command-a-03-2025", "xVsKUv72B05xviCPtkQtEKwZaWOfT4oms8q67BH3", "You are a helpful assistant.", "root")
         print("------ GEMINI MESH (COHERE CONNECTED) ------")
         print("Escribe 'help' para ver los comandos.")
         
@@ -96,7 +96,7 @@ class AppCLI:
 
     def cmd_create(self, args):
         b = input("Nombre: ")
-        m = input("Modelo (ej: command-light): ") or "command-a-03-2025"
+        m = input("Modelo (ej: command-a-03-2025): ")
         k = input("ApiKey (deja vacio para usar la de defecto): ") or "xVsKUv72B05xviCPtkQtEKwZaWOfT4oms8q67BH3"
         si = input("System Instruction: ")
         ruta = input("Ruta en directorio (ej: root/ventas) [root]: ") or "root"
