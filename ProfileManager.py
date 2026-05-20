@@ -1,13 +1,18 @@
 from Node import Node
 from ErrorLogManager import ErrorLogManager
+from DirectoryTree import DirectoryTree
+from AVLTree import AVLTree
 
 class ProfileManager:
     def __init__(self):
         self.head = None
         self.end = None
         self.logger = ErrorLogManager()
+        self.dir_tree = DirectoryTree()
+        self.avl_tree = AVLTree()
 
-    def createProfile(self, botName, model, apiKey, systemInstruction):
+
+    def createProfile(self, botName, model, apiKey, systemInstruction, path="root"):
         newNode = Node(botName, model, apiKey, systemInstruction)
         if not self.head:
             self.head = self.end = newNode
@@ -15,13 +20,14 @@ class ProfileManager:
             self.end.next = newNode
             newNode.previous = self.end
             self.end = newNode
+        self.avl_tree.add_bot(newNode)
+        self.dir_tree.add_bot(path, newNode)
         return newNode.id
     
     def consultProfile(self, requiredId):
-        current = self.head
-        while current:
-            if current.id == requiredId: return current
-            current = current.next
+        node = self.avl_tree.search(requiredId)
+        if node:
+            return node
         self.logger.logError("NOT_FOUND", requiredId)
         return None
     
@@ -43,6 +49,7 @@ class ProfileManager:
         if node.next: node.next.previous = node.previous
         else: self.end = node.previous
         node.next = node.previous = None
+        self.avl_tree.remove_bot(requiredId)
         return True
     
     def __iter__(self):

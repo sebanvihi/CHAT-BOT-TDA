@@ -31,6 +31,16 @@ def serializar(manager, ruta_archivo):
             actual_estado = actual_estado.next
         data_final["chatbots"].append(bot_dict)
         actual_bot = actual_bot.next
+        
+    data_final["auditoria"] = []
+    actual_log = manager.logger.head
+    while actual_log:
+        data_final["auditoria"].append({
+            "dateError": actual_log.dateError,
+            "errorCode": actual_log.errorCode,
+            "shortDescription": actual_log.shortDescription
+        })
+        actual_log = actual_log.next
 
     try:
         with open(ruta_archivo, 'w') as f:

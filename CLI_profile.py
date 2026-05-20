@@ -2,6 +2,7 @@ import cohere
 from ProfileManager import ProfileManager
 from serialization import serializar, obtener_ruta
 from deserialization import cargar_datos
+from DecisionTree import DecisionTree
 
 class AppCLI:
     def __init__(self):
@@ -19,10 +20,18 @@ class AppCLI:
             "log": self.cmd_log,
             "save": self.cmd_save,
             "load": self.cmd_load,
-            "help": self.cmd_help
+            "help": self.cmd_help,
+            "mkdir": self.cmd_mkdir,
+            "tree": self.cmd_tree,
+            "find": self.cmd_find,
+            "log-range": self.cmd_log_range
         }
+        self.decision_tree = DecisionTree()
 
     def run(self):
+        self.cmd_load("")
+        if not self.profile_manager.head:
+            self.profile_manager.createProfile("DefaultBot", "command-light", "xVsKUv72B05xviCPtkQtEKwZaWOfT4oms8q67BH3", "You are a helpful assistant.", "root")
         print("------ GEMINI MESH (COHERE CONNECTED) ------")
         print("Escribe 'help' para ver los comandos.")
         
@@ -31,7 +40,9 @@ class AppCLI:
             entrada = input(f"\n[Bot: {bot_actual}]> ").strip()
             
             if not entrada: continue
-            if entrada.lower() in ["exit", "exit-chatbot"]: break
+            if entrada.lower() in ["exit", "exit-chatbot"]:
+                self.cmd_save("")
+                break
 
             partes = entrada.split(maxsplit=1)
             comando = partes[0].lower()
@@ -56,7 +67,8 @@ class AppCLI:
 
         try:
             co = cohere.Client(self.selected_node.apiKey)
-            prompt_final = f"{self.selected_node.systemInstruction}\n\nUser: {msg_user}\nChatbot:"
+            sufijo = self.decision_tree.evaluate(msg_user)
+            prompt_final = f"{self.selected_node.systemInstruction} {sufijo}\n\nUser: {msg_user}\nChatbot:"
             response = co.chat(
                 model=self.selected_node.model,
                 message=prompt_final
@@ -87,7 +99,8 @@ class AppCLI:
         m = input("Modelo (ej: command-light): ") or "command-a-03-2025"
         k = input("ApiKey (deja vacio para usar la de defecto): ") or "xVsKUv72B05xviCPtkQtEKwZaWOfT4oms8q67BH3"
         si = input("System Instruction: ")
-        pid = self.profile_manager.createProfile(b, m, k, si)
+        ruta = input("Ruta en directorio (ej: root/ventas) [root]: ") or "root"
+        pid = self.profile_manager.createProfile(b, m, k, si, ruta)
         print(f"ID generado: {pid}")
 
     def cmd_list(self, args):
@@ -140,6 +153,34 @@ class AppCLI:
     def cmd_load(self, args):
         cargar_datos(self.profile_manager)
         print("Datos cargados.")
+
+    def cmd_mkdir(self, args):
+        partes = args.split(maxsplit=1)
+        if len(partes) < 2:
+            print("Uso: mkdir <ruta_padre> <nombre_nuevo>")
+            return
+        self.profile_manager.dir_tree.mkdir(partes[0], partes[1])
+        print("Directorio creado.")
+
+    def cmd_tree(self, args):
+        self.profile_manager.dir_tree.tree()
+
+    def cmd_find(self, args):
+        if not args:
+            print("Uso: find <id>")
+            return
+        node = self.profile_manager.avl_tree.search(args)
+        if node:
+            print(f"Encontrado: {node.botName} | Modelo: {node.model}")
+        else:
+            print("No encontrado.")
+
+    def cmd_log_range(self, args):
+        partes = args.split(",")
+        if len(partes) < 2:
+            print("Uso: log-range <YYYY-MM-DD HH:MM:SS>,<YYYY-MM-DD HH:MM:SS>")
+            return
+        self.profile_manager.logger.log_range(partes[0].strip(), partes[1].strip())
 
 if __name__ == "__main__":
     app = AppCLI()
