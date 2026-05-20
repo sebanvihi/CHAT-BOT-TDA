@@ -1,0 +1,32 @@
+{
+    "chatbots": [
+        {
+            "id": "1690-kKheiKkufG-1057",
+            "botName": "DefaultBot",
+            "model": "command-a-03-2025",
+            "apiKey": "xVsKUv72B05xviCPtkQtEKwZaWOfT4oms8q67BH3",
+            "systemInstruction": "You are a helpful assistant.",
+            "mensajes": [],
+            "historial_estados": []
+        },
+        {
+            "id": "2176-JlnfCOiOqN-3810",
+            "botName": "BOT-sito",
+            "model": "command-a-03-2025",
+            "apiKey": "xVsKUv72B05xviCPtkQtEKwZaWOfT4oms8q67BH3",
+            "systemInstruction": "eres un profesor de mitologia griega",
+            "mensajes": [
+                {
+                    "user": "User",
+                    "text": "quien es el dios de la justicia?"
+                },
+                {
+                    "user": "BOT-sito",
+                    "text": "\u00a1Hola! Me alegra que te intereses por la mitolog\u00eda griega. Es un tema fascinante, lleno de historias y personajes incre\u00edbles.\n\nBueno, en cuanto a tu pregunta, el dios de la justicia en la mitolog\u00eda griega es **Themis**. Ella es una tit\u00e1nide, hija de Urano (el cielo) y Gea (la tierra), y se la considera la personificaci\u00f3n de la justicia divina, el orden y las leyes.\n\nThemis es a menudo representada como una mujer madura, con una balanza en una mano y una espada en la otra, s\u00edmbolos de la justicia y la verdad. Tambi\u00e9n se la asocia con la profec\u00eda, ya que era la encargada de interpretar los deseos de los dioses y transmitirlos a los mortales.\n\nEs interesante destacar que Themis no es la \u00fanica deidad relacionada con la justicia en la mitolog\u00eda griega. Tambi\u00e9n est\u00e1 **Dik\u00e9**, su hija, que representa la justicia humana y la equidad. Pero sin duda, Themis es la figura m\u00e1s importante y reconocida en este \u00e1mbito.\n\n\u00bfTe gustar\u00eda saber m\u00e1s sobre Themis o alg\u00fan otro aspecto de la mitolog\u00eda griega? \u00a1Pregunta sin miedo! Estoy aqu\u00ed para ayudarte a descubrir los secretos de estos fascinantes mitos."
+                }
+            ],
+            "historial_estados": []
+        }
+    ],
+    "auditoria": []
+}
